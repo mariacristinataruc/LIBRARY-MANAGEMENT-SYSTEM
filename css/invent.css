@@ -1,0 +1,331 @@
+
+.whole-main {
+  position:absolute;
+  width: 1244px;
+  height: 1200px;
+  margin: 0 auto;
+  background: #E7B10A;
+  overflow: hidden;
+  cursor: pointer;
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+}
+
+.menu-bar{
+  position: absolute;
+  overflow: hidden;
+  width: 250px;
+  height: 1184px;
+  margin: 7px 7px;
+  border-radius: 10px;
+  background-color:#B7BC4F;
+}
+
+.admin{
+  position:absolute;
+  margin: 20px 0 0 75px;
+  width: 110px;
+  height: 120px;
+  text-align: center;
+  }
+
+.admin img{
+  margin: 15px 0 10px 10px ;
+}
+
+.admin span{
+  text-align: center;
+}
+
+.dash-menu{
+  position: absolute;
+  margin: 180px 0 0 0;
+  height: 440px;
+  width:250px;
+  justify-content: space-evenly;
+  display: flex;
+}
+
+.dash-menu img{
+  margin: 5px 0 0 10px;
+}
+
+.dash-menu span{
+  position: absolute;
+  margin:15px 0 0 15px;
+  font-size: 12px;
+}
+
+.dashboard{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  background-color: #F7F1E5;
+}
+
+.staff-admin{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 55px 0 0 0;
+  background-color: #F7F1E5;
+}
+
+.instructors{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 110px 0 0 0;
+  background-color: #F7F1E5;
+  
+}
+
+.students{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 165px 0 0 0;
+  background-color: #F7F1E5;
+  
+  
+}
+
+.books{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 220px 0 0 0;
+  background-color: #F7F1E5;
+}
+
+.bor-instructs{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 275px 0 0 0;
+  background-color: #F7F1E5;
+}
+
+.bor-studs{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 330px 0 0 0;
+  background-color: #F7F1E5;
+}
+
+.b-inventory{
+  position: absolute;
+  height:45px;
+  width:240px;
+  border-radius: 10px;
+  margin: 385px 0 0 0;
+  background: linear-gradient(#898121,#E7B10A);
+  
+}
+
+.main-dash{
+  position: absolute;
+  width:970px;
+  height:1184px;
+  margin: 7px 7px;
+  border-radius: 10px;
+  left: 259px;
+  background-color: #F7F1E5;
+
+}
+
+.search{
+  position: absolute;
+  width:300px;
+  height:40px;
+  margin: 10px 0 0 650px;
+  background-color:white;
+  border-radius: 10px;
+}
+
+.sear{
+  position: absolute;
+  width:250px;
+  height:30px;
+  border-radius: 10px;
+  background-color: white;
+  border: none;
+  margin: 4px;
+} 
+
+.search img{
+  margin: 8px 20px 0 265px;
+}
+
+.nav-dash{
+  position: absolute;
+  width:970px;
+  height:50px;
+  margin:8px 0; 
+}
+
+.logo img{
+  position: absolute;
+  height: 60px;
+  width:60px;
+  margin: 0 20px;
+  overflow: hidden;
+}
+
+.logo span{
+  position: absolute;
+  margin:9px 0 0 90px;
+  font-size: 20px;
+  font-family: Poppins;
+}
+
+.total{
+  position: absolute;
+  display: grid;
+  justify-content: space-evenly;
+  height:130px; 
+  width:970px;
+  margin: 70px 0;
+  align-items: center;
+  font-size: small;
+  text-align: center;
+}
+
+.ent{
+  height: 20px;
+  width:70px;
+  margin-top: 5px;
+  background-color: #FFE188;
+  border:none;
+}
+
+.enter{
+  position: absolute;
+  height: 35px;
+  width:100px;
+  background-color: #FFE188;
+  border-radius: 10px;
+}
+
+.entry-add{
+  position:absolute;
+  height:70px;
+  width:100px;
+  margin:60px 10px 70px 700px;
+  
+}
+
+.add-new{
+  position: absolute;
+  height:35px;
+  width:120px;
+  left:120px;
+  border-radius: 10px;
+  background-color: #898121;
+}
+
+.add-new button{
+  position:relative;
+  height:35px;
+  width:120px;
+  background-color: #E7B10A;
+  border-radius: 10px;
+  padding-left: 30px;
+  border:none;
+}
+
+.add-new button img{
+  position:absolute;
+  top:5px;
+  left:10px;
+  height: 25px;
+  width: 25px;
+}
+
+
+/*this is under the tabular section*/
+.tabular{
+position: relative;
+background: white;
+margin-top: 130px;
+border-radius:10px;
+padding:1rem;
+}
+/*style for the table*/
+.table{
+border-radius: 10px;
+width:950px;
+height: auto;
+}
+/*style of table*/
+table{
+width:950px;
+height: auto;
+border-collapse: collapse;
+margin-top:100px;
+}
+/*style on the table head*/
+thead{
+background:linear-gradient(#efcc62,#ece16f); 
+color: black
+}
+/*style on the table head*/
+th{
+padding:10px;
+text-align:left;
+}
+/*style on the table body*/
+tbody{
+background:#FFF2F2;
+
+}
+/*style on the table data*/
+td{
+padding: 8px;
+font-size: 12px;
+color: #333;
+text-align:left;
+}
+/*Set background color to white for every even-numbered row 
+in an HTML table to create alternating row colors.*/
+tr:nth-child(even){
+background:white;
+}
+/*style on table foote, set background color and its text*/
+tfoot{
+background:linear-gradient(#efcc62,#ece16f); 
+color: black;
+font-weight: bold;
+}
+/*style table footer and table data*/
+tfoot td{
+padding:15px;
+text-align: center;
+color: black;
+}
+/*style on button under the table*/
+.table button{
+background:none;
+cursor:pointer;
+padding:4px;
+margin:8px 0;
+border-radius:8px;
+border: none;
+transition: all 0.1s ease-in-out;
+}
+/*set effect on button under table, and set highlight color */
+.table button:hover,
+.active {
+background:#4F6F52;
+}
+/*set the span of the button in the table*/
+.table button span{
+width: 10px;
+}
