@@ -14,7 +14,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Count total entries in admin-staff table
+// Count total entries in book-student table
 $total_entries_sql = "SELECT COUNT(*) as total FROM `book-student`";
 $total_entries_result = $conn->query($total_entries_sql);
 $total_entries = 0;
@@ -24,6 +24,29 @@ if ($total_entries_result->num_rows > 0) {
     $total_entries = $total_entries_row['total'];
 }
 
+// Set the number of records per page
+$recordsPerPage = 10;
+
+// Calculate the total number of pages
+$totalPages = ceil($total_entries / $recordsPerPage);
+
+// Get the current page from URL parameter (default to 1)
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
+if ($currentPage > $totalPages) $currentPage = $totalPages;
+
+// Calculate the offset for the SQL query
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Retrieve the records for the current page
+$sql = "SELECT bs.bs_ID, s.studFname, s.studLname, b.b_title, bs.bs_borDate, bs.bs_retDate, bs.bs_expDate, bs.bs_state, a.as_fname, a.as_lname 
+        FROM `book-student` bs
+        JOIN `students` s ON bs.stud_ID = s.stud_ID
+        JOIN `book-info` b ON bs.b_ID = b.b_ID
+        JOIN `admin-staff` a ON bs.as_ID = a.as_ID
+        ORDER BY bs.bs_ID ASC 
+        LIMIT $offset, $recordsPerPage";
+$result = $conn->query($sql);
 
 // Function to generate custom ID
 function generateCustomID($conn) {
@@ -86,7 +109,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         echo "Error: Form data is incomplete<br>";
     }
-    
 }
 
 ?>
@@ -521,6 +543,35 @@ width: 10px;
     background: linear-gradient(#898121,#E7B10A);
   }
 
+  strong{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+  strong a{
+    text-decoration:none;
+  }
+
+  strong:hover{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background: linear-gradient(#898121,#E7B10A);
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+
+
+
     </style>
 <body>  
     
@@ -604,57 +655,129 @@ width: 10px;
                 </form>
         </div>      
         <?php
-            // Retrieve and display records in HTML table
-            $sql = "SELECT bs.bs_ID, s.studFname, s.studLname, bs.bs_state, bs.bs_borDate, bs.bs_retDate, bs.bs_expDate, 
-                    a.as_fname, a.as_lname, b.b_title 
-                    FROM `book-student` bs
-                    JOIN `students` s ON bs.stud_ID = s.stud_ID
-                    JOIN `admin-staff` a ON bs.as_ID = a.as_ID
-                    JOIN `book-info` b ON bs.b_ID = b.b_ID";
+ob_start(); // Start output buffering
 
-            $result = $conn->query($sql);
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "library-ms";
 
-            if ($result->num_rows > 0) {
-                // Output data in HTML table
-                echo "<table class='table'>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Student</th>
-                                    <th>Status</th>
-                                    <th>Borrowed Date</th>
-                                    <th>Admin</th>
-                                    <th>Book Title</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>";
-                while ($row = $result->fetch_assoc()) {
-                    $studentName = $row['studFname'] . ' ' . $row['studLname'];
-                    $adminName = $row['as_fname'] . ' ' . $row['as_lname'];
-                    echo "<tr>
-                            <td>" . $row['bs_ID'] . "</td>
-                            <td>" . $studentName . "</td>
-                            <td>" . $row['bs_state'] . "</td>
-                            <td>" . $row['bs_borDate'] . "</td>
-                            <td>" . $adminName . "</td>
-                            <td>" . $row['b_title'] . "</td>
-                            <td>
-                                <a href='borstud-update.php?id=" . $row['bs_ID'] . "'>
-                                    <img src='assets/edit.png' style='width: 20px;height: 20px;'>
-                                </a> 
-                                <a href='borstud-view.php?id=" . $row['bs_ID'] . "'>
-                                    <img src='assets/vision.png' style='width: 20px;height: 20px;'>
-                                </a>
-                                <a href='borstud-delete.php?id=" . $row['bs_ID'] . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
-                                    <img src='assets/del.png' style='width: 20px;height: 20px;'>
-                                </a>
-                            </td>
-                       </tr>";
-    }
-    echo "</table>";
-} else {
-    echo "0 results<br>";
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+
+// Set the number of records per page
+$recordsPerPage = 10;
+
+// Get the current page number from the URL, default to 1 if not present
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Retrieve the total number of records
+$totalEntriesSql = "SELECT COUNT(*) as total FROM `book-student`";
+$totalEntriesResult = $conn->query($totalEntriesSql);
+$totalEntries = 0;
+
+if ($totalEntriesResult->num_rows > 0) {
+    $totalEntriesRow = $totalEntriesResult->fetch_assoc();
+    $totalEntries = $totalEntriesRow['total'];
+}
+
+$totalPages = ceil($totalEntries / $recordsPerPage);
+
+// Retrieve the records for the current page
+$sql = "SELECT bs.bs_ID, s.studFname, s.studLname, bs.bs_state, bs.bs_borDate, bs.bs_retDate, bs.bs_expDate, 
+        a.as_fname, a.as_lname, b.b_title 
+        FROM `book-student` bs
+        JOIN `students` s ON bs.stud_ID = s.stud_ID
+        JOIN `admin-staff` a ON bs.as_ID = a.as_ID
+        JOIN `book-info` b ON bs.b_ID = b.b_ID
+        ORDER BY bs.bs_ID ASC 
+        LIMIT $offset, $recordsPerPage";
+$result = $conn->query($sql);
+
+echo "<table border='0' cellspacing='1' cellpadding='2'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Borrowed Date</th>
+                <th>Admin</th>
+                <th>Book Title</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>";
+
+$currentRowCount = 0;
+
+// Check if there are any results
+if ($result->num_rows > 0) {
+    // Output data in HTML table
+    while ($row = $result->fetch_assoc()) {
+        $studentName = htmlspecialchars($row['studFname'] . ' ' . $row['studLname']);
+        $adminName = htmlspecialchars($row['as_fname'] . ' ' . $row['as_lname']);
+        echo "<tr>
+                <td>" . htmlspecialchars($row['bs_ID']) . "</td>
+                <td>" . $studentName . "</td>
+                <td>" . htmlspecialchars($row['bs_state']) . "</td>
+                <td>" . htmlspecialchars($row['bs_borDate']) . "</td>
+                <td>" . $adminName . "</td>
+                <td>" . htmlspecialchars($row['b_title']) . "</td>
+                <td>
+                    <a href='borstud-update.php?id=" . htmlspecialchars($row['bs_ID']) . "'>
+                        <img src='assets/edit.png' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='borstud-view.php?id=" . htmlspecialchars($row['bs_ID']) . "'>
+                        <img src='assets/vision.png' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='borstud-delete.php?id=" . htmlspecialchars($row['bs_ID']) . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
+                        <img src='assets/del.png' style='width: 20px; height: 20px;'>
+                    </a>
+                </td>
+              </tr>";
+        $currentRowCount++;
+    }
+}
+
+// Fill the remaining rows with empty data if less than $recordsPerPage
+for ($i = $currentRowCount; $i < $recordsPerPage; $i++) {
+    echo "<tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>";
+}
+
+echo "</tbody>
+      <tfoot>
+            <tr>
+                <td colspan='7' style='text-align: center;'>";
+
+// Pagination controls
+for ($page = 1; $page <= $totalPages; $page++) {
+    if ($page == $currentPage) {
+        echo "<strong style='font-size:15px;'>$page</strong> ";
+    } else {
+        echo "<strong style='font-size:15px;color:black;'><a href='?page=$page'>$page</a></strong> ";
+    }
+}
+
+echo "</td>
+            </tr>
+        </tfoot>
+      </table>";
+
+$conn->close();
 
 // Flush the output buffer and turn off output buffering
 ob_end_flush();
