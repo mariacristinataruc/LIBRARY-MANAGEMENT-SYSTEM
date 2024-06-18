@@ -78,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Count total entries in admin-staff table
+// Count total entries in book-instructor table
 $total_entries_sql = "SELECT COUNT(*) as total FROM `book-instructor`";
 $total_entries_result = $conn->query($total_entries_sql);
 $total_entries = 0;
@@ -88,16 +88,32 @@ if ($total_entries_result->num_rows > 0) {
     $total_entries = $total_entries_row['total'];
 }
 
+// Set the number of records per page
+$recordsPerPage = 10;
 
-// Retrieve and display records in HTML table
+// Calculate the total number of pages
+$totalPages = ceil($total_entries / $recordsPerPage);
+
+// Get the current page from URL parameter (default to 1)
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
+if ($currentPage > $totalPages) $currentPage = $totalPages;
+
+// Calculate the offset for the SQL query
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Retrieve the records for the current page
 $sql = "SELECT bi.binst_ID, i.inst_fname, i.inst_lname, bi.binst_state, bi.binst_borDate, bi.binst_retDate, bi.binst_expDate, 
         a.as_fname, a.as_lname, b.b_title 
         FROM `book-instructor` bi
         JOIN `instructors` i ON bi.inst_ID = i.inst_ID
         JOIN `admin-staff` a ON bi.as_ID = a.as_ID
-        JOIN `book-info` b ON bi.b_ID = b.b_ID";
+        JOIN `book-info` b ON bi.b_ID = b.b_ID
+        ORDER BY bi.binst_ID ASC 
+        LIMIT $offset, $recordsPerPage";
 
 $result = $conn->query($sql);
+
 
 ob_end_flush();
 ?>
@@ -536,6 +552,34 @@ width: 10px;
     overflow-x:hidden;
 }
 
+strong{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+  strong a{
+    text-decoration:none;
+  }
+
+  strong:hover{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background: linear-gradient(#898121,#E7B10A);
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+
+
 
     </style>
 <body>  
@@ -623,45 +667,81 @@ width: 10px;
 <?php
 // Start output buffering to avoid headers already sent error
 
+echo "<table border='0' cellspacing='1' cellpadding='2'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Instructor</th>
+                <th>Status</th>
+                <th>Admin</th>
+                <th>Book Title</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>";
+
+$currentRowCount = 0;
+
+// Check if there are any results
 if ($result->num_rows > 0) {
     // Output data in HTML table
-    echo "<table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Instructor</th>
-                    <th>Status</th>
-                    <th>Admin</th>
-                    <th>Book Title</th>
-                    <th>Action</th>
-                </tr>
-            </thead>";
     while ($row = $result->fetch_assoc()) {
-        $instructorName = $row['inst_fname'] . ' ' . $row['inst_lname'];
-        $adminName = $row['as_fname'] . ' ' . $row['as_lname'];
+        $instructorName = htmlspecialchars($row['inst_fname'] . ' ' . $row['inst_lname']);
+        $adminName = htmlspecialchars($row['as_fname'] . ' ' . $row['as_lname']);
         echo "<tr>
-                <td>" . $row['binst_ID'] . "</td>
+                <td>" . htmlspecialchars($row['binst_ID']) . "</td>
                 <td>" . $instructorName . "</td>
-                <td>" . $row['binst_state'] . "</td>
+                <td>" . htmlspecialchars($row['binst_state']) . "</td>
                 <td>" . $adminName . "</td>
-                <td>" . $row['b_title'] . "</td>
+                <td>" . htmlspecialchars($row['b_title']) . "</td>
                 <td>
-                    <a href='borinstruct-update.php?id=" . $row['binst_ID'] . "'>
+                    <a href='borinstruct-update.php?id=" . htmlspecialchars($row['binst_ID']) . "'>
                         <img src='assets/edit.png' style='width: 20px;height: 20px;'>
                     </a> 
-                    <a href='borinstruct-view.php?id=" . $row['binst_ID'] . "'>
+                    <a href='borinstruct-view.php?id=" . htmlspecialchars($row['binst_ID']) . "'>
                         <img src='assets/vision.png' style='width: 20px;height: 20px;'>
                     </a>
-                    <a href='borinstruct-delete.php?id=" . $row['binst_ID'] . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
+                    <a href='borinstruct-delete.php?id=" . htmlspecialchars($row['binst_ID']) . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
                         <img src='assets/del.png' style='width: 20px;height: 20px;'>
                     </a>
                 </td>
               </tr>";
+        $currentRowCount++;
     }
-    echo "</table>";
-} else {
-    echo "0 results<br>";
 }
+
+// Fill the remaining rows with empty data if less than $recordsPerPage
+for ($i = $currentRowCount; $i < $recordsPerPage; $i++) {
+    echo "<tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>";
+}
+
+echo "</tbody>
+      <tfoot>
+            <tr>
+                <td colspan='6' style='text-align: center;'>";
+
+// Pagination controls
+for ($page = 1; $page <= $totalPages; $page++) {
+    if ($page == $currentPage) {
+        echo "<strong style='font-size:15px;'>$page</strong> ";
+    } else {
+        echo "<strong style='font-size:15px;color:black;'><a href='?page=$page'>$page</a></strong> ";
+    }
+}
+
+echo "</td>
+            </tr>
+        </tfoot>
+      </table>";
+
+$conn->close();
 
 // Flush the output buffer and turn off output buffering
 ob_end_flush();
