@@ -75,17 +75,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Count total entries in admin-staff table
-$total_entries_sql = "SELECT COUNT(*) as total FROM `book-info`";
-$total_entries_result = $conn->query($total_entries_sql);
-$total_entries = 0;
-
-if ($total_entries_result->num_rows > 0) {
-    $total_entries_row = $total_entries_result->fetch_assoc();
-    $total_entries = $total_entries_row['total'];
-}
-
-
 // Retrieve form data via POST method
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = $_POST['title'] ?? '';
@@ -123,9 +112,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-$sql = "SELECT b_ID, b_title, b_desc, author, b_pubDate, b_acqDate FROM `book-info` ORDER BY b_ID DESC";
+// Get the total number of records
+$sql = "SELECT COUNT(*) AS total FROM `book-info`";
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+$totalRecords = $row['total'];
 
-  $result = $conn->query($sql);
+// Set the number of records per page
+$recordsPerPage = 10;
+
+// Calculate the total number of pages
+$totalPages = ceil($totalRecords / $recordsPerPage);
+
+// Get the current page from URL parameter (default to 1)
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
+if ($currentPage > $totalPages) $currentPage = $totalPages;
+
+// Calculate the offset for the SQL query
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Retrieve the records for the current page
+$sql = "SELECT b_ID, b_title, b_desc, author, b_pubDate, b_acqDate FROM `book-info` ORDER BY b_ID ASC LIMIT $offset, $recordsPerPage";
+$result = $conn->query($sql);
+
+$total_entries_sql = "SELECT COUNT(*) as total FROM `book-info`";
+$total_entries_result = $conn->query($total_entries_sql);
+$total_entries = 0;
+
+if ($total_entries_result->num_rows > 0) {
+    $total_entries_row = $total_entries_result->fetch_assoc();
+    $total_entries = $total_entries_row['total'];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -558,6 +577,32 @@ width: 10px;
     border-radius: 10px;
     background: linear-gradient(#898121,#E7B10A);
   }
+
+  strong{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+  strong a{
+    text-decoration:none;
+  }
+
+  strong:hover{
+    padding: 8px 12px;
+    margin: 0 4px;
+    background: linear-gradient(#898121,#E7B10A);
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+  }
 </style>
 <body>
     
@@ -643,46 +688,114 @@ width: 10px;
 
 </body>
 </html>
-<?php
-  if ($result->num_rows > 0) {
-      // Output data in HTML table
-      echo "<table>
-              <thead>
-                  <tr>
-                      <th>ID</th>
-                      <th>Title</th>
-                      <th>Description</th>
-                      <th>Author</th>
-                      <th>Publication Date</th>
-                      <th>Acquisition Date</th>
-                      <th>Action</th>
-                  </tr>
-              </thead>";
-      while($row = $result->fetch_assoc()) {
-          echo "<tr>
-                    <td>" . $row["b_ID"] . "</td>
-                    <td>" . $row["b_title"] . "</td>
-                    <td>" . $row["b_desc"] . "</td>
-                    <td>" . $row["author"] . "</td>
-                    <td>" . $row["b_pubDate"] . "</td>
-                    <td>" . $row["b_acqDate"] . "</td>
-                  <td>
-                    <a href='book-update.php?id=" . $row["b_ID"] . "'>
-                        <img src='assets/edit.png' style='width: 20px;height: 20px;'>
-                    </a> 
-                    <a href='book-view.php?id=" . $row["b_ID"] . "'>
-                        <img src='assets/vision.png' style='width: 20px;height: 20px;'>
-                    </a>
-                    <a href='book-delete.php?id=" . $row["b_ID"] . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
-                        <img src='assets/del.png' style='width: 20px;height: 20px;'>
-                    </a>
-                    
-                  </td>
-                </tr>";
-      }
-      echo "</table>";
-  } else {
-      echo "0 results<br>";
-  }
 
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "library-ms";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Set the number of records per page
+$recordsPerPage = 10;
+
+// Get the current page number from the URL, default to 1 if not present
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Retrieve the total number of records
+$totalEntriesSql = "SELECT COUNT(*) as total FROM `book-info`";
+$totalEntriesResult = $conn->query($totalEntriesSql);
+$totalEntries = 0;
+
+if ($totalEntriesResult->num_rows > 0) {
+    $totalEntriesRow = $totalEntriesResult->fetch_assoc();
+    $totalEntries = $totalEntriesRow['total'];
+}
+
+$totalPages = ceil($totalEntries / $recordsPerPage);
+
+// Retrieve the records for the current page
+$sql = "SELECT b_ID, b_title, b_desc, author, b_pubDate, b_acqDate FROM `book-info` ORDER BY b_ID ASC LIMIT $offset, $recordsPerPage";
+$result = $conn->query($sql);
+
+echo "<table border='0' cellspacing='1' cellpadding='2'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Acquisition</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>";
+
+$currentRowCount = 0;
+
+// Check if there are any results
+if ($result->num_rows > 0) {
+    // Output data in HTML table
+    while($row = $result->fetch_assoc()) {
+        echo "<tr>
+                <td>" . htmlspecialchars($row["b_ID"]) . "</td>
+                <td>" . htmlspecialchars($row["b_title"]) . "</td>
+                <td>" . htmlspecialchars($row["author"]) . "</td>
+                <td>" . htmlspecialchars($row["b_acqDate"]) . "</td>
+                <td>
+                    <a href='book-update.php?id=" . htmlspecialchars($row["b_ID"]) . "'>
+                        <img src='assets/edit.png' alt='Edit' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='book-view.php?id=" . htmlspecialchars($row["b_ID"]) . "'>
+                        <img src='assets/vision.png' alt='View' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='book-delete.php?id=" . htmlspecialchars($row["b_ID"]) . "' onclick=\"return confirm('Are you sure you want to delete this record?');\">
+                        <img src='assets/del.png' alt='Delete' style='width: 20px; height: 20px;'>
+                    </a>
+                </td>
+            </tr>";
+        $currentRowCount++;
+    }
+}
+
+// Fill the remaining rows with empty data if less than $recordsPerPage
+for ($i = $currentRowCount; $i < $recordsPerPage; $i++) {
+    echo "<tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>";
+}
+
+echo "</tbody>
+      <tfoot>
+            <tr>
+                <td colspan='5' style='text-align: center;'>";
+
+// Pagination controls
+for ($page = 1; $page <= $totalPages; $page++) {
+    if ($page == $currentPage) {
+        echo "<strong style='font-size:15px;'>$page</strong> ";
+    } else {
+        echo "<strong style='font-size:15px;color:black;'><a href='?page=$page'>$page</a></strong> ";
+    }
+}
+
+echo "</td>
+            </tr>
+        </tfoot>
+      </table>";
+
+$conn->close();
 ?>
+
+
